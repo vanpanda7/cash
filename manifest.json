@@ -1,0 +1,29 @@
+{
+    "name" : "Cash",
+    "appid" : "__UNI__19553B1",
+    "description" : "个人记账应用",
+    "versionName" : "1.0.1",
+    "versionCode" : "100",
+    "transformPx" : false,
+    "app-plus" : {
+        "nvueCompiler" : "uni-app",
+        "compilerVersion" : 3,
+        "modules" : {},
+        "distribute" : {
+            "android" : {
+                "permissions" : [ "<uses-permission android:name=\"android.permission.VIBRATE\"/>" ]
+            },
+            "ios" : {
+                "dSYMs" : false
+            },
+            "sdkConfigs" : {}
+        }
+    },
+    "quickapp" : {},
+    "mp-weixin" : {
+        "appid" : "",
+        "setting" : {
+            "urlCheck" : false
+        }
+    }
+}

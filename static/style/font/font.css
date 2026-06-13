@@ -1,0 +1,55 @@
+@font-face {
+  font-family: 'DIN Medium';
+  src: url('/static/style/font/DIN-Medium.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'DIN-Black';
+  src: url('/static/style/font/DIN-Black.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'DIN-Bold';
+  src: url('/static/style/font/DIN-Bold.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'DIN-Light';
+  src: url('/static/style/font/DIN-Light.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PingFang SC Regular';
+  src: url('/static/style/font/PingFang-SC-Regular.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PingFang SC-Regular';
+  src: url('/static/style/font/PingFangSC-Regular.otf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PingFang SC-Medium';
+  src: url('/static/style/font/PingFangSC-Medium.otf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PingFang SC-Semibold';
+  src: url('/static/style/font/PingFangSC-Semibold.otf');
+  font-weight: normal;
+  font-style: normal;
+}

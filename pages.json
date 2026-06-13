@@ -1,0 +1,192 @@
+{
+	"easycom": {
+		"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
+		"^u-(.*)": "@/uview-ui/components/u-$1/u-$1.vue"
+	},
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/bill/bill",
+			"style": {
+				"navigationBarTitleText": "账单",
+				"enablePullDownRefresh": true
+			}
+
+		},
+		{
+			"path": "pages/chart/chart",
+			"style": {
+				"navigationBarTitleText": "日历",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/yusuan/yusuan",
+			"style": {
+				"navigationBarTitleText": "预算",
+				"enablePullDownRefresh": false
+			}
+
+		},
+		{
+			"path": "pages/zhangBeng/zhangBeng",
+			"style": {
+				"navigationBarTitleText": "账本",
+				"enablePullDownRefresh": false
+			}
+
+		},
+		{
+			"path": "pages/conZhangbeng/conZhangbeng",
+			"style": {
+				"navigationBarTitleText": "账本详情",
+				"enablePullDownRefresh": false
+			}
+
+		}, 
+		{
+			"path": "pages/shouzhi/shouzhi",
+			"style": {
+				"navigationBarTitleText": "收支",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/add/add",
+			"style": {
+				"navigationBarTitleText": "记一笔",
+				// "navigationBarBackgroundColor":"#ffeda2",
+				"enablePullDownRefresh": false
+			}
+
+		},
+		{
+			"path": "pages/assets/assets",
+			"style": {
+				"navigationBarTitleText": "资产",
+				"enablePullDownRefresh": true
+			}
+
+		},
+		{
+			"path": "pages/my/my",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/add_2/add_2",
+			"style": {
+				"navigationBarTitleText": "详细记账",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/bill_info/bill_info",
+			"style": {
+				"navigationBarTitleText": "账单",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/assets_add/assets_add",
+			"style": {
+				"navigationBarTitleText": "添加账户",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/fenglei/fenglei",
+			"style": {
+				"navigationBarTitleText": "分类统计",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/qushi/qushi",
+			"style": {
+				"navigationBarTitleText": "趋势",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/assets_info/assets_info",
+			"style": {
+				"navigationBarTitleText": "账户详情",
+				"enablePullDownRefresh": false
+			}
+		}
+		,
+		{
+			"path": "pages/search/search",
+			"style": {
+				"navigationBarTitleText": "搜索",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/cats/cats",
+			"style": {
+				"navigationBarTitleText": "分类管理",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/report/report",
+			"style": {
+				"navigationBarTitleText": "月度报表",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/recur/recur",
+			"style": {
+				"navigationBarTitleText": "周期账单",
+				"enablePullDownRefresh": false
+			}
+		}
+
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "Cash",
+		"navigationBarBackgroundColor": "#ffc84c",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"color": "#999999",
+		"selectedColor": "#ffc02b",
+		"backgroundColor": "#ffffff",
+		"list": [{
+				"pagePath": "pages/bill/bill",
+				"text": "账单",
+				"iconPath": "static/img/bill.png",
+				"selectedIconPath": "static/img/bill-active.png"
+			},
+			{
+				"pagePath": "pages/shouzhi/shouzhi",
+				"text": "收支",
+				"iconPath": "static/img/chart.png",
+				"selectedIconPath": "static/img/chart-active.png"
+			},
+			{
+				"pagePath": "pages/add/add",
+				"text": "记一笔",
+				"iconPath": "static/img/add.png"
+			},
+			{
+				"pagePath": "pages/assets/assets",
+				"text": "资产",
+				"iconPath": "static/img/assets.png",
+				"selectedIconPath": "static/img/assets-active.png"
+			},
+			{
+				"pagePath": "pages/my/my",
+				"text": "我的",
+				"iconPath": "static/img/my.png",
+				"selectedIconPath": "static/img/my-active.png"
+			}
+		]
+	}
+
+}
