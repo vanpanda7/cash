@@ -73,70 +73,70 @@
 			this.selAllnum()
 		},
 		onPullDownRefresh() {
-			this.selZhanghu()
-			this.selAllnum()
-			setTimeout(() => uni.stopPullDownRefresh(), 300)
-		},
+		Promise.all([this.selZhanghu(), this.selAllnum()])
+			.finally(() => uni.stopPullDownRefresh())
+	},
 		onLoad() {
 			this.selAllnum()
 		},
 		methods: {
 			selZhanghu() {
 				this.allList = []
-				let res = uni.request({
-					url: 'http://cash.local/query_get_destlist',
-					method: 'POST',
-					header: {
-						'Content-Type': 'application/json'
-					},
-					success: res => {
-						let obj = {
-							typeName: '',
-							typeMoney: 0,
-							typeImg: '',
-							typeBac: ''
-						}
-					for (const i in res.data) {
-							obj.typeName = i
-							obj.typeMoney = res.data[i]
-							const p = this.presetColors[i]
-							if (p) {
-								obj.typeImg = this.zhanghuImg[p.img]
-								obj.typeBac = p.bac
-							} else {
-								obj.typeImg = this.zhanghuImg[4]
-								obj.typeBac = '#EDEEF2'
-							}
-							this.allList.push(obj)
-							obj = {
+				return new Promise(resolve => {
+					uni.request({
+						url: 'http://cash.local/query_get_destlist',
+						method: 'POST',
+						header: {
+							'Content-Type': 'application/json'
+						},
+						success: res => {
+							let obj = {
 								typeName: '',
 								typeMoney: 0,
 								typeImg: '',
-								typeBac: '',
+								typeBac: ''
 							}
-						}
-					},
-					fail: res => {
-					},
-				});
+						for (const i in res.data) {
+								obj.typeName = i
+								obj.typeMoney = res.data[i]
+								const p = this.presetColors[i]
+								if (p) {
+									obj.typeImg = this.zhanghuImg[p.img]
+									obj.typeBac = p.bac
+								} else {
+									obj.typeImg = this.zhanghuImg[4]
+									obj.typeBac = '#EDEEF2'
+								}
+								this.allList.push(obj)
+								obj = {
+									typeName: '',
+									typeMoney: 0,
+									typeImg: '',
+									typeBac: '',
+								}
+							}
+						},
+						fail: () => {},
+						complete: () => resolve()
+					})
+				})
 			},
 
 			selAllnum() {
-				let res = uni.request({
-					url: 'http://cash.local/query_all_dest_sum',
-					method: 'POST',
-					header: {
-						'Content-Type': 'application/json'
-					},
-					success: res => {
-						//
-
-						this.total = String(res.data.sum)
-						// this.selZhanghu()
-					},
-					fail: res => {
-					},
-				});
+				return new Promise(resolve => {
+					uni.request({
+						url: 'http://cash.local/query_all_dest_sum',
+						method: 'POST',
+						header: {
+							'Content-Type': 'application/json'
+						},
+						success: res => {
+							this.total = String(res.data.sum)
+						},
+						fail: () => {},
+						complete: () => resolve()
+					})
+				})
 			},
 
 			selAssets(item) {

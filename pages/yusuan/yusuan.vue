@@ -188,19 +188,22 @@
 					url: 'http://cash.local/query_categories',
 					method: 'POST', header: { 'Content-Type': 'application/json' },
 					success: res => {
-						const cats = (res.data.out || []).map(c => c.name || c)
-						Promise.all(cats.map(c => new Promise(r => {
-							uni.request({
-								url: 'http://cash.local/query_sum_by_time_group',
-								method: 'POST', header: { 'Content-Type': 'application/json' },
-								data: { time: 'month', inorout: 'out' },
-								success: gr => {
-									const found = (gr.data || []).find(g => g.type === c)
-									r({ name: c, spent: found ? found.sum : 0, budget: this.catBudgetMap[c] || 0, percent: this.catBudgetMap[c] ? Math.min(Math.round((found ? found.sum : 0) / this.catBudgetMap[c] * 100), 100) : 0 })
-								},
-								fail: () => r({ name: c, spent: 0, budget: this.catBudgetMap[c] || 0, percent: 0 })
-							})
-						}))).then(list => { this.catList = list })
+						const catNames = (res.data.out || []).map(c => c.name || c)
+						uni.request({
+							url: 'http://cash.local/query_sum_by_time_group',
+							method: 'POST', header: { 'Content-Type': 'application/json' },
+							data: { time: 'month', inorout: 'out' },
+							success: gr => {
+								const groupMap = {}
+								const groups = gr.data || []
+								for (const g of groups) groupMap[g.type] = g.sum
+								this.catList = catNames.map(c => {
+									const spent = groupMap[c] || 0
+									const budget = this.catBudgetMap[c] || 0
+									return { name: c, spent, budget, percent: budget ? Math.min(Math.round(spent / budget * 100), 100) : 0 }
+								})
+							}
+						})
 					}
 				})
 			},

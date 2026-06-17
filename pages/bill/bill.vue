@@ -133,15 +133,16 @@
 				}, 600)
 			}
 		},
-		onPullDownRefresh(){
-			this.dayOffset = 0
-			this.noMore = false
-			this.allList = []
-			this.QueryMoney()
-			this.makeObj()
-			this.loadBudget()
-			setTimeout(() => uni.stopPullDownRefresh(), 300)
-		},
+	onPullDownRefresh(){
+		this.dayOffset = 0
+		this.noMore = false
+		this.allList = []
+		this._refreshing = true
+		this.QueryMoney()
+		this.makeObj()
+		this.loadBudget()
+		setTimeout(() => { if (this._refreshing) { this._refreshing = false; uni.stopPullDownRefresh() } }, 8000)
+	},
 		onReachBottom(){
 			if (!this.loadingMore && !this.noMore) this.loadMore()
 		},
@@ -187,124 +188,50 @@
 				});
 			},
 			QuerZhangdan(time) {
-				let OneDayInfo = {
-					"book": "",
-					"dest": "",
-					"id": 0,
-					"inorout": "",
-					"money": "",
-					"name": "",
-					"remark": null,
-					"time": "",
-					"type": ""
-				}
-				let objDay = {
-					"ThisTime": "",
-					"xingqi": "",
-					"InMoney": 0,
-					"OutMoney": 0,
-					"list1": []
-				}
-				objDay.ThisTime = time.slice(0, 10)
-				let result = uni.request({
-					url: 'http://cash.local/query_by_time',
+				const dateStr = time.slice(0, 10)
+				const xingqiMap = ['日', '一', '二', '三', '四', '五', '六']
+				const d = new Date(dateStr)
+				const xingqi = '星期' + xingqiMap[d.getDay()]
+				uni.request({
+					url: 'http://cash.local/query_day_summary',
 					method: 'POST',
-					header: {
-						'Content-Type': 'application/json'
-					},
-					data: {
-						"time": time
-					},
+					header: { 'Content-Type': 'application/json' },
+					data: { "time": dateStr },
 					success: res => {
-						if (res.data && res.data.length > 0) {
-							for (let i = 0; i < res.data.length; i++) {
-								OneDayInfo = { ...res.data[i] }
-								if (OneDayInfo.inorout == '收入') {
-									OneDayInfo.money = "+" + String(OneDayInfo.money)
-								} else {
-									OneDayInfo.money = "-" + String(OneDayInfo.money)
-								}
-								objDay.list1.push(OneDayInfo)
-								OneDayInfo = {
-									"book": "",
-									"dest": "",
-									"id": 0,
-									"inorout": "",
-									"money": "",
-									"name": "",
-									"remark": null,
-									"time": "",
-									"type": ""
-								}
-							}
-
-							let resultX = uni.request({
-								url: 'http://cash.local/query_sum_by_time',
-								method: 'POST',
-								header: {
-									'Content-Type': 'application/json'
-								},
-								data: {
-									"time": time,
-									"inorout": 'in'
-								},
-								success: res => {
-									objDay.InMoney = res.data.sum
-									let resultX = uni.request({
-										url: 'http://cash.local/query_sum_by_time',
-										method: 'POST',
-										header: {
-											'Content-Type': 'application/json'
-										},
-										data: {
-											"time": time,
-											"inorout": 'out'
-										},
-										success: res => {
-											objDay.OutMoney = res.data.sum
-											this.allList.push(objDay)
-											this.batchHasData++
-											this.pendingLoads--
-											if (this.pendingLoads <= 0) {
-												this.loadingMore = false
-												if (this.batchHasData === 0) this.noMore = true
-											}
-											objDay = {
-												"ThisTime": "",
-												"xingqi": "",
-												"InMoney": 0,
-												"OutMoney": 0,
-												"list1": []
-											}
-										},
-									fail: res => {
-										this.pendingLoads--
-										if (this.pendingLoads <= 0) {
-											this.loadingMore = false
-											if (this.batchHasData === 0) this.noMore = true
-										}
-									},
-									})
-								},
-								fail: res => {
-								},
+						const data = res.data || {}
+						const bills = data.bills || []
+						if (bills.length > 0) {
+							const list1 = bills.map(b => ({
+								...b,
+								money: (b.inorout === '收入' ? '+' : '-') + String(b.money)
+							}))
+							this.allList.push({
+								ThisTime: dateStr,
+								xingqi: xingqi,
+								InMoney: data.inSum || 0,
+								OutMoney: data.outSum || 0,
+								list1: list1
 							})
-						} else {
-							this.pendingLoads--
-							if (this.pendingLoads <= 0) {
-								this.loadingMore = false
-								if (this.batchHasData === 0) this.noMore = true
-							}
+							this.batchHasData++
 						}
-					},
-					fail: res => {
-						this.pendingLoads--
-						if (this.pendingLoads <= 0) {
-							this.loadingMore = false
-							if (this.batchHasData === 0) this.noMore = true
-						}
-					},
-				});
+				this.pendingLoads--
+				if (this.pendingLoads <= 0) {
+					this.allList.sort((a, b) => b.ThisTime.localeCompare(a.ThisTime))
+					this.loadingMore = false
+					if (this.batchHasData === 0) this.noMore = true
+					if (this._refreshing) { this._refreshing = false; uni.stopPullDownRefresh() }
+				}
+			},
+			fail: () => {
+				this.pendingLoads--
+				if (this.pendingLoads <= 0) {
+					this.allList.sort((a, b) => b.ThisTime.localeCompare(a.ThisTime))
+					this.loadingMore = false
+					if (this.batchHasData === 0) this.noMore = true
+					if (this._refreshing) { this._refreshing = false; uni.stopPullDownRefresh() }
+				}
+			}
+				})
 			},
 
 			makeObj() {

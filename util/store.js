@@ -465,6 +465,62 @@ function handleRequest(path, data) {
       return keys.map(k => ({ sum: groupMap[k], type: k })).sort((a, b) => b.sum - a.sum)
     }
 
+    case '/query_day_summary': {
+      const time = (data && data.time) || formatDate(new Date())
+      const bills = getBillsForTime(time)
+      const inSum = bills.filter(b => b.inorout === '收入').reduce((s, b) => s + (typeof b.money === 'number' ? b.money : Number(b.money)), 0)
+      const outSum = bills.filter(b => b.inorout === '支出').reduce((s, b) => s + (typeof b.money === 'number' ? b.money : Number(b.money)), 0)
+      return { bills, inSum, outSum, date: time }
+    }
+
+    case '/query_month_daily_sums': {
+      const yearMonth = (data && data.yearMonth) || (formatDate(new Date()).substring(0, 7))
+      const days = {}
+      const [y, m] = yearMonth.split('-').map(Number)
+      const daysInMonth = new Date(y, m, 0).getDate()
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = yearMonth + '-' + pad(d)
+        const dayBills = billsByDate[dateStr] || []
+        days[dateStr] = {
+          inSum: dayBills.filter(b => b.inorout === '收入').reduce((s, b) => s + (typeof b.money === 'number' ? b.money : Number(b.money)), 0),
+          outSum: dayBills.filter(b => b.inorout === '支出').reduce((s, b) => s + (typeof b.money === 'number' ? b.money : Number(b.money)), 0)
+        }
+      }
+      return { days, yearMonth }
+    }
+
+    case '/import_bills': {
+      const bills = (data && data.bills) || []
+      if (!bills.length) return { ret: 'success', count: 0 }
+      let count = 0
+      for (const b of bills) {
+        const bill = {
+          book: b.book || '日常账本',
+          dest: b.dest || '微信',
+          id: nextBillId++,
+          inorout: b.inorout || '支出',
+          money: typeof b.money === 'string' ? parseFloat(b.money) || 0 : (Number(b.money) || 0),
+          name: b.name || '未命名',
+          remark: b.remark || '',
+          time: b.time || formatDateTime(new Date(), 12, 0, 0),
+          type: b.type || '其他'
+        }
+        allBills.push(bill)
+        const dateKey = extractDate(bill.time)
+        if (!billsByDate[dateKey]) billsByDate[dateKey] = []
+        billsByDate[dateKey].push(bill)
+        count++
+      }
+      saveBills()
+      saveNextId()
+      return { ret: 'success', count }
+    }
+
+    case '/seed_data': {
+      seedData()
+      return { ret: 'success', count: allBills.length }
+    }
+
     case '/reset_store': {
       allBills = []
       for (const k of Object.keys(billsByDate)) delete billsByDate[k]
@@ -519,11 +575,6 @@ export function initStore() {
 
   loadAll()
   rebuildIndex()
-
-  if (allBills.length === 0) {
-    seedData()
-  }
-
   checkRecurring()
 
   const _origRequest = uni.request
@@ -537,7 +588,7 @@ export function initStore() {
       const tid = setTimeout(() => {
         if (opts.success) opts.success(result)
         if (opts.complete) opts.complete(result)
-      }, 30)
+      }, 0)
 
       return { abort() { clearTimeout(tid) } }
     }

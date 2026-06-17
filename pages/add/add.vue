@@ -162,7 +162,7 @@
 			getIcon(n) {
 				if (!n) return ''
 				const idx = this.catIndex(n)
-				return '/static/img/icon/' + (idx < 10 ? '0' + idx : '' + idx) + n + '.png'
+				return '/static/img/icon/' + (idx < 10 ? '0' + idx : '' + idx) + '.png'
 			},
 			appendNum(v) {
 				if (v === 'del') { this.changeValue = this.changeValue.slice(0, -1) }

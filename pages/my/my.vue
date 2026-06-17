@@ -55,6 +55,10 @@
 					<image src="/static/img/mylist2.png"></image>
 					<text>导入数据</text>
 				</view>
+				<view class="list-info" @click="seedData">
+					<image src="/static/img/mylist4.png"></image>
+					<text>生成演示数据</text>
+				</view>
 				<view class="list-info" @click="clearData">
 					<image src="/static/img/mylist4.png"></image>
 					<text>清除数据</text>
@@ -134,21 +138,36 @@
 				})
 			},
 			parseImport(raw, mode) {
+				const API = 'http://cash.local'
+				const importBills = (bills, cb) => {
+					uni.request({
+						url: API + '/import_bills', method: 'POST',
+						header: { 'Content-Type': 'application/json' },
+						data: { bills }, success: res => {
+							uni.showToast({ title: '已导入 ' + (res.data.count || bills.length) + ' 条账单', icon: 'success' })
+							this.loadStats()
+						}, fail: () => uni.showToast({ title: '导入失败', icon: 'none' })
+					})
+				}
 				try {
 					const data = JSON.parse(raw)
 					if (data.cash_bills) {
+						const parsedBills = typeof data.cash_bills === 'string' ? JSON.parse(data.cash_bills) : data.cash_bills
 						if (mode === 'replace') {
-							uni.setStorageSync('cash_bills', data.cash_bills)
-							if (data.cash_dests) uni.setStorageSync('cash_dests', data.cash_dests)
-							if (data.cash_cats) uni.setStorageSync('cash_cats', data.cash_cats)
-							if (data.cash_budget_day) uni.setStorageSync('cash_budget_day', data.cash_budget_day)
-							if (data.cash_budget_month) uni.setStorageSync('cash_budget_month', data.cash_budget_month)
+							uni.request({
+								url: API + '/reset_store', method: 'POST',
+								header: { 'Content-Type': 'application/json' },
+								success: () => {
+									if (data.cash_dests) uni.setStorageSync('cash_dests', data.cash_dests)
+									if (data.cash_cats) uni.setStorageSync('cash_cats', data.cash_cats)
+									if (data.cash_budget_day) uni.setStorageSync('cash_budget_day', data.cash_budget_day)
+									if (data.cash_budget_month) uni.setStorageSync('cash_budget_month', data.cash_budget_month)
+									importBills(parsedBills)
+								}
+							})
 						} else {
-							const exist = JSON.parse(uni.getStorageSync('cash_bills') || '[]')
-							uni.setStorageSync('cash_bills', JSON.stringify([...exist, ...data.cash_bills]))
+							importBills(parsedBills)
 						}
-						uni.showToast({ title: '导入成功', icon: 'success' })
-						this.loadStats()
 						return
 					}
 				} catch (e) {}
@@ -158,17 +177,15 @@
 					uni.showToast({ title: '无法识别数据格式', icon: 'none' })
 					return
 				}
-				let nextId = Number(uni.getStorageSync('cash_next_id') || 1000)
-				const newBills = bills.map(b => ({ ...b, id: nextId++ }))
 				if (mode === 'replace') {
-					uni.setStorageSync('cash_bills', JSON.stringify(newBills))
+					uni.request({
+						url: API + '/reset_store', method: 'POST',
+						header: { 'Content-Type': 'application/json' },
+						success: () => importBills(bills)
+					})
 				} else {
-					const exist = JSON.parse(uni.getStorageSync('cash_bills') || '[]')
-					uni.setStorageSync('cash_bills', JSON.stringify([...exist, ...newBills]))
+					importBills(bills)
 				}
-				uni.setStorageSync('cash_next_id', nextId)
-				uni.showToast({ title: '已导入 ' + newBills.length + ' 条账单', icon: 'success' })
-				this.loadStats()
 			},
 			parseCSV(raw) {
 				const lines = raw.trim().split(/\r?\n/).filter(l => l.trim())
@@ -210,20 +227,36 @@
 				return bills
 			},
 			goAssets() { uni.switchTab({ url: '../assets/assets' }) },
+			seedData() {
+				uni.showModal({
+					title: '生成演示数据',
+					content: '将生成约 62 天的模拟账单数据，方便体验 App 功能。已有数据会被覆盖。',
+					success: res => {
+						if (res.confirm) {
+							uni.request({
+								url: 'http://cash.local/seed_data',
+								method: 'POST',
+								header: { 'Content-Type': 'application/json' },
+								success: r => {
+									const count = (r.data && r.data.count) || 0
+									this.$refs.uToast.show({ type: 'success', message: '已生成 ' + count + ' 条演示数据', duration: 2000 })
+									setTimeout(() => { this.loadStats() }, 800)
+								},
+								fail: () => uni.showToast({ title: '生成失败', icon: 'none' })
+							})
+						}
+					}
+				})
+			},
 			clearData() {
 				uni.showModal({
 					title: '确认清除',
 					content: '将清除所有记账数据（账单、分类、预算、周期账单），不可恢复',
 					success: res => {
 						if (res.confirm) {
-							uni.removeStorageSync('cash_bills')
-							uni.removeStorageSync('cash_next_id')
-							uni.removeStorageSync('cash_dests')
-							uni.removeStorageSync('cash_cats')
 							uni.removeStorageSync('cash_budget_day')
 							uni.removeStorageSync('cash_budget_month')
 							uni.removeStorageSync('cash_cat_budget')
-							uni.removeStorageSync('cash_recurring')
 							uni.request({
 								url: 'http://cash.local/reset_store',
 								method: 'POST',
